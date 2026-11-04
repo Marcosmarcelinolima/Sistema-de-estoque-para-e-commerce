@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de vendas</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ============ MENU LATERAL ============ -->
+    <aside class="sidebar">
+      <a class="brand" href="#">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Minha Loja</span>
+      </a>
+
+      <nav class="nav" aria-label="Principal">
+        <a href="#" class="nav-link is-active">Painel</a>
+        <a href="#" class="nav-link">Pedidos </a>
+        <a href="#" class="nav-link">Produtos</a>
+        <a href="#" class="nav-link">Estoque </a>
+        <a href="#" class="nav-link">Clientes</a>
+        <a href="#" class="nav-link">Cupons</a>
+        <a href="#" class="nav-link">Relatórios</a>
+        <a href="#" class="nav-link">Configurações</a>
+      </nav>
+
+      <div class="sidebar-user">
+        <span class="avatar">AD</span>
+        <div>
+          <strong>Administrador</strong>
+          <small>admin@minhaloja.com</small>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ CONTEÚDO ============ -->
+    <div class="main">
+
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1>Painel de vendas</h1>
+          <p>Terça-feira, 3 de novembro de 2026</p>
+        </div>
+
+        <form class="search" role="search" onsubmit="return false">
+          <label for="busca" class="sr-only">Buscar</label>
+          <input id="busca" type="search" placeholder="Buscar pedido, cliente ou produto">
+        </form>
+        <!--Buttons do Header-->
+        <div class="topbar-actions">
+          <button class="btn btn--ghost" type="button">Exportar</button>
+          <button class="btn btn--primary" type="button">Novo pedido</button>
+        </div>
+      </header>
+
+      <main class="content">
+
+        <!-- ---------- INDICADORES ---------- -->
+        <section class="kpis" aria-label="Indicadores de hoje">
+          <article class="kpi">
+            <h2>Faturamento hoje</h2>
+            <p class="kpi-value" id="kpi-faturamento">0</p>
+            <p class="kpi-delta kpi-delta--up">0</p>
+          </article>
+
+          <article class="kpi">
+            <h2>Pedidos hoje</h2>
+            <p class="kpi-value" id="kpi-pedidos">0</p>
+            <p class="kpi-delta kpi-delta--up">0</p>
+          </article>
+
+          <article class="kpi">
+            <h2>Ticket médio</h2>
+            <p class="kpi-value" id="kpi-ticket">0</p>
+            <p class="kpi-delta kpi-delta--down">0</p>
+          </article>
+
+          <article class="kpi kpi--attention">
+            <h2>Transações Pendentes</h2>
+            <p class="kpi-value" id="kpi-pendentes">0</p>
+            <p class="kpi-delta">0</p>
+          </article>
+        </section>
+
+        <!-- ---------- ETAPAS DO PEDIDO ---------- -->
+        <section class="panel" aria-labelledby="titulo-etapas">
+          <div class="panel-head">
+            <h2 id="titulo-etapas">Pedidos por etapa</h2>
+            <!--Vou manter o tamanho igual independente da quantidade (Trabalho desnecessário)-->
+            <span class="panel-note">Da compra até a entrega</span>
+          </div>
+
+          <ol class="pipeline">
+            <li class="stage stage--1" style="--n: 20">
+              <span class="stage-count">0</span>
+              <span class="stage-name">Aguardando pagamento</span>
+            </li>
+            <li class="stage stage--2" style="--n: 20">
+              <span class="stage-count">0</span>
+              <span class="stage-name">Pago</span>
+            </li>
+            <li class="stage stage--3" style="--n: 20">
+              <span class="stage-count">0</span>
+              <span class="stage-name">Em separação</span>
+            </li>
+            <li class="stage stage--4" style="--n: 20">
+              <span class="stage-count">0</span>
+              <span class="stage-name">Enviado</span>
+            </li>
+            <li class="stage stage--5" style="--n: 20">
+              <span class="stage-count">0</span>
+              <span class="stage-name">Entregue</span>
+            </li>
+          </ol>
+        </section>
+
+        <div class="grid">
+
+          <!-- ---------- TABELA DE PEDIDOS ---------- -->
+          <section class="panel panel--table" aria-labelledby="titulo-pedidos">
+            <div class="panel-head">
+              <h2 id="titulo-pedidos">Pedidos recentes</h2>
+
+              <div class="filters" role="group" aria-label="Filtrar por status">
+                <button class="chip is-active" type="button">Todos</button>
+                <button class="chip" type="button">Pendentes</button>
+                <button class="chip" type="button">Enviados</button>
+                <button class="chip" type="button">Cancelados</button>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Pedido</th>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Data</th>
+                    <th scope="col" class="num">Itens</th>
+                    <th scope="col" class="num">Total</th>
+                    <th scope="col">Pagamento</th>
+                    <th scope="col">Status</th>
+                    <th scope="col"><span class="sr-only">Ações</span></th>
+                  </tr>
+                </thead>
+
+                <tbody id="tabela-pedidos">
+                  <tr data-id="0">
+                    <td class="mono-idpedido">#0</td>
+                    <td class="Cliente">Cliente</td>
+                    <td class="DataTransacao">Data</td>
+                    <td class="QtdItens">0</td>
+                    <td class="num">R$0</td>
+                    <td class="TipoPagamento">Sem Pagamento</td>
+                    <td><span class="status status--paid">Sem status</span></td>
+                    <td class="actions"><button class="btn btn--small" type="button">Abrir</button></td>
+                  </tr>
+                  <tr data-id="0">
+                    <td class="mono-idpedido">#0</td>
+                    <td class="Cliente">Cliente</td>
+                    <td class="DataTransacao">Data</td>
+                    <td class="QtdItens">0</td>
+                    <td class="num">R$0</td>
+                    <td class="TipoPagamento">Sem Pagamento</td>
+                    <td><span class="status status--pending">Sem status</span></td>
+                    <td class="actions"><button class="btn btn--small" type="button">Abrir</button></td>
+                  </tr>
+                 <tr data-id="0">
+                    <td class="mono-idpedido">#0</td>
+                    <td class="Cliente">Cliente</td>
+                    <td class="DataTransacao">Data</td>
+                    <td class="QtdItens">0</td>
+                    <td class="num">R$0</td>
+                    <td class="TipoPagamento">Sem Pagamento</td>
+                    <td><span class="status status--picking">Sem status</span></td>
+                    <td class="actions"><button class="btn btn--small" type="button">Abrir</button></td>
+                  </tr>
+                 <tr data-id="0">
+                    <td class="mono-idpedido">#0</td>
+                    <td class="Cliente">Cliente</td>
+                    <td class="DataTransacao">Data</td>
+                    <td class="QtdItens">0</td>
+                    <td class="num">R$0</td>
+                    <td class="TipoPagamento">Sem Pagamento</td>
+                    <td><span class="status status--shipped">Sem status</span></td>
+                    <td class="actions"><button class="btn btn--small" type="button">Abrir</button></td>
+                  </tr>
+                  <tr data-id="0">
+                    <td class="mono-idpedido">#0</td>
+                    <td class="Cliente">Cliente</td>
+                    <td class="DataTransacao">Data</td>
+                    <td class="QtdItens">0</td>
+                    <td class="num">R$0</td>
+                    <td class="TipoPagamento">Sem Pagamento</td>
+                    <td><span class="status status--cancelled">Sem status</span></td>
+                    <td class="actions"><button class="btn btn--small" type="button">Abrir</button></td>
+                  </tr>
+                  <tr data-id="0">
+                    <td class="mono-idpedido">#0</td>
+                    <td class="Cliente">Cliente</td>
+                    <td class="DataTransacao">Data</td>
+                    <td class="QtdItens">0</td>
+                    <td class="num">R$0</td>
+                    <td class="TipoPagamento">Sem Pagamento</td>
+                    <td><span class="status status--delivered">Sem status</span></td>
+                    <td class="actions"><button class="btn btn--small" type="button">Abrir</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-foot">
+              <span>Mostrando "QtdQuebraPedidos" de "QtdPedidos" pedidos</span>
+              <div class="pager">
+                <button class="btn btn--small btn--ghost" type="button" disabled>Anterior</button>
+                <button class="btn btn--small btn--ghost" type="button">Próxima</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ---------- COLUNA LATERAL ---------- -->
+          <div class="side">
+
+            <section class="panel" aria-labelledby="titulo-semana">
+              <div class="panel-head">
+                <h2 id="titulo-semana">Faturamento da semana</h2>
+              </div>
+
+              <div class="bars" role="img" aria-label="Faturamento diário dos últimos 7 dias">
+                <div class="bar" style="--h: 48%"><span>Qua</span></div>
+                <div class="bar" style="--h: 62%"><span>Qui</span></div>
+                <div class="bar" style="--h: 55%"><span>Sex</span></div>
+                <div class="bar" style="--h: 80%"><span>Sáb</span></div>
+                <div class="bar" style="--h: 38%"><span>Dom</span></div>
+                <div class="bar" style="--h: 66%"><span>Seg</span></div>
+                <div class="bar bar--today" style="--h: 72%"><span>Hoje</span></div>
+              </div>
+            </section>
+
+            <section class="panel" aria-labelledby="titulo-estoque">
+              <div class="panel-head">
+                <h2 id="titulo-estoque">Estoque baixo</h2>
+                <a class="link" href="#">Ver estoque</a>
+              </div>
+
+              <ul class="list">
+                <li>
+                  <div>
+                    <strong>DescricaoProduto</strong>
+                    <small>CodigProduto</small>
+                  </div>
+                  <span class="stock stock--critical">QtdEstoque</span>
+                </li>
+                <li>
+                  <div>
+                    <strong>DescricaoProduto</strong>
+                    <small>CodigProduto</small>
+                  </div>
+                  <span class="stock stock--critical">QtdEstoque</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="panel" aria-labelledby="titulo-top">
+              <div class="panel-head">
+                <h2 id="titulo-top">Mais vendidos hoje</h2>
+              </div>
+
+              <ul class="list">
+                <li>
+                  <div>
+                    <strong>DescricaoProduto</strong>
+                    <small>CodigoProduto</small>
+                  </div>
+                  <span class="sold">QtdVendida</span>
+                </li>
+                <li>
+                  <div>
+                    <strong>DescricaoProduto</strong>
+                    <small>CodigoProduto</small>
+                  </div>
+                  <span class="sold">QtdVendida</span>
+                </li>
+                <li>
+                 <div>
+                    <strong>DescricaoProduto</strong>
+                    <small>CodigoProduto</small>
+                  </div>
+                  <span class="sold">QtdVendida</span>
+                </li>
+              </ul>
+            </section>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+</body>
+</html>
