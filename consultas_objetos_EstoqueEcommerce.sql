@@ -29,45 +29,42 @@ produto, estoque, deposito, pedido e item_pedido.
 OBS: dt_pedido é provisório e deve ser confirmado.
 */
 
-WITH periodo AS (
-    SELECT
-        DATE '2025-01-01' AS data_inicio,
-        DATE '2025-02-01' AS data_fim
-),
-vendas_anteriores AS (
-    SELECT
-        ip.cd_produto,
-        SUM(ip.qt_item) AS quantidade_vendida
-    FROM estoque.pedido p
-    INNER JOIN estoque.item_pedido ip
-        ON p.cd_pedido = ip.cd_pedido
-    CROSS JOIN periodo pe
-    WHERE p.tp_status = 2
-      AND p.dt_pedido >= pe.data_inicio - INTERVAL '1 year'
-      AND p.dt_pedido < pe.data_fim - INTERVAL '1 year'
-    GROUP BY ip.cd_produto
-)
+
+/*
+1. PROJEÇÃO DE ESTOQUE COM BASE NO HISTÓRICO DE VENDAS
+
+Compare o estoque atual com a quantidade vendida
+no mesmo período do ano anterior.
+*/
+
 SELECT
-    p.nm_produto AS nome_produto,
-    d.nm_deposito AS nome_deposito,
-    e.qt_estoque AS quantidade_disponivel,
-    COALESCE(v.quantidade_vendida, 0)
-        AS vendas_periodo_anterior,
-    e.qt_estoque - COALESCE(v.quantidade_vendida, 0)
-        AS saldo_projetado,
+    p.nm_produto AS produto,
+    d.nm_deposito AS deposito,
+    e.qt_estoque AS estoque_atual,
+    COALESCE(v.quantidade_vendida, 0) AS quantidade_vendida,
+    e.qt_estoque - COALESCE(v.quantidade_vendida, 0) AS saldo_projetado,
     CASE
-        WHEN e.qt_estoque - COALESCE(v.quantidade_vendida, 0)
-             < e.qt_minima
+        WHEN e.qt_estoque - COALESCE(v.quantidade_vendida, 0) < e.qt_minima
         THEN 'Necessita reposicao'
         ELSE 'Estoque suficiente'
-    END AS situacao_estoque
+    END AS situacao
 FROM estoque.produto p
 INNER JOIN estoque.estoque e
     ON p.cd_produto = e.cd_produto
 INNER JOIN estoque.deposito d
     ON e.cd_deposito = d.cd_deposito
-LEFT JOIN vendas_anteriores v
-    ON p.cd_produto = v.cd_produto
+LEFT JOIN (
+    SELECT
+        ip.cd_produto,
+        SUM(ip.qt_item) AS quantidade_vendida
+    FROM estoque.pedido ped
+    INNER JOIN estoque.item_pedido ip
+        ON ped.cd_pedido = ip.cd_pedido
+    WHERE ped.tp_status = 2
+      AND ped.dt_pedido >= DATE '2024-01-01'
+      AND ped.dt_pedido < DATE '2024-02-01'
+    GROUP BY ip.cd_produto
+) v ON p.cd_produto = v.cd_produto
 ORDER BY saldo_projetado ASC;
 
 
