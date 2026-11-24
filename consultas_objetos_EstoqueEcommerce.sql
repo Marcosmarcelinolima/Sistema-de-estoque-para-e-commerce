@@ -69,6 +69,9 @@ INNER JOIN estoque.marca m
     ON p.cd_marca = m.cd_marca
 INNER JOIN estoque.item_pedido ip
     ON p.cd_produto = ip.cd_produto
+INNER JOIN estoque.pedido ped
+    ON ip.cd_pedido = ped.cd_pedido
+WHERE ped.tp_status = 2
 GROUP BY
     p.cd_produto,
     p.nm_produto,
