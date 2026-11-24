@@ -361,6 +361,7 @@ FROM estoque.estoque
 WHERE cd_produto = 1 AND cd_deposito = 1;
 
 
+
 /*
 =========================================================
 6. BLOQUEIO DE VENDA DE PRODUTOS INATIVOS OU
@@ -372,136 +373,169 @@ Solicitação do gerente:
 "A empresa identificou que produtos desativados ou que
 não possuem quantidade disponível suficiente ainda podem
 ser adicionados aos pedidos por operações realizadas
-diretamente no banco.
+diretamente no banco. Desenvolva um trigger que impeça
+a inclusão de itens em pedidos quando o produto estiver
+inativo ou quando a quantidade solicitada comprometer
+o estoque mínimo definido para o depósito."
 
-Desenvolva um trigger que impeça a inclusão de itens
-quando o produto estiver inativo ou quando a quantidade
-solicitada comprometer o estoque mínimo do depósito."
+Regras de negócio:
 
-Regras:
 - Verificar o campo is_ativo da tabela produto.
 - Se estiver FALSE, impedir a inserção.
-- Se estiver ativo, verificar o estoque disponível.
-- Quantidade restante = Quantidade atual - Quantidade solicitada.
-- Se o resultado for maior ou igual à quantidade mínima,
-  permitir a operação.
-- Caso contrário, impedir e informar que não existe
-  saldo suficiente.
+- Retornar mensagem informando que o produto está inativo.
+- Se estiver ativo, verificar a disponibilidade do estoque.
+- Calcular a quantidade restante:
+  Quantidade restante = Estoque atual - Quantidade solicitada.
+- Se a quantidade restante for maior ou igual a qt_minima,
+  permitir a inclusão.
+- Caso contrário, impedir a operação e informar que
+  o estoque é insuficiente para preservar o mínimo.
 
 Tabelas:
 produto, item_pedido e estoque.
 
 Trigger:
 estoque.tr_bloquear_produto_inativo.
-
-OBS: adaptar o trigger original para verificar
-também o estoque mínimo e identificar o depósito.
 */
 
 
--- Teste 1: desativar produto
-UPDATE estoque.produto
-SET is_ativo = FALSE
-WHERE cd_produto = 20;
+-- Adicionar o código do depósito ao item do pedido,
+-- caso a coluna ainda não exista.
+ALTER TABLE estoque.item_pedido
+ADD COLUMN IF NOT EXISTS cd_deposito SMALLINT;
 
 
--- Testar inserção de produto inativo
-DO $$
+-- Criar função da trigger
+CREATE OR REPLACE FUNCTION estoque.fn_bloquear_produto_inativo()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_ativo BOOLEAN;
+    v_estoque INTEGER;
+    v_minima INTEGER;
 BEGIN
-    BEGIN
-        INSERT INTO estoque.item_pedido (
-            cd_pedido, cd_produto, qt_item, vl_unitario
-        )
-        VALUES (22, 20, 2, 600.00);
 
-        RAISE NOTICE 'Item inserido (não deveria acontecer).';
+    -- Verificar se o produto está ativo
+    SELECT is_ativo
+    INTO v_ativo
+    FROM estoque.produto
+    WHERE cd_produto = NEW.cd_produto;
 
-    EXCEPTION WHEN OTHERS THEN
-        RAISE NOTICE 'Erro esperado: %', SQLERRM;
-    END;
+    IF v_ativo IS DISTINCT FROM TRUE THEN
+        RAISE EXCEPTION
+            'Não é permitido vender: o produto está inativo.';
+    END IF;
+
+    -- Consultar o estoque do produto no depósito informado
+    SELECT qt_estoque, qt_minima
+    INTO v_estoque, v_minima
+    FROM estoque.estoque
+    WHERE cd_produto = NEW.cd_produto
+      AND cd_deposito = NEW.cd_deposito
+    FOR UPDATE;
+
+    -- Verificar se existe estoque cadastrado
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            'Não existe estoque cadastrado para este produto neste depósito.';
+    END IF;
+
+    -- Verificar se a quantidade restante preserva o estoque mínimo
+    IF v_estoque - NEW.qt_item < v_minima THEN
+        RAISE EXCEPTION
+            'Estoque insuficiente: a venda comprometeria o estoque mínimo do depósito.';
+    END IF;
+
+    RETURN NEW;
+
 END;
 $$;
 
 
--- Reativar produto
-UPDATE estoque.produto
-SET is_ativo = TRUE
-WHERE cd_produto = 20;
+-- Criar trigger
+DROP TRIGGER IF EXISTS tr_bloquear_produto_inativo
+ON estoque.item_pedido;
+
+CREATE TRIGGER tr_bloquear_produto_inativo
+BEFORE INSERT ON estoque.item_pedido
+FOR EACH ROW
+EXECUTE FUNCTION estoque.fn_bloquear_produto_inativo();
 
 
--- Testar inserção de produto ativo
+-- TESTE 1: verificar bloqueio de produto inativo
+
 DO $$
 BEGIN
-    BEGIN
-        INSERT INTO estoque.item_pedido (
-            cd_pedido, cd_produto, qt_item, vl_unitario
-        )
-        VALUES (22, 20, 2, 600.00);
 
-        RAISE NOTICE 'Item inserido com sucesso!';
+    UPDATE estoque.produto
+    SET is_ativo = FALSE
+    WHERE cd_produto = 20;
+
+    BEGIN
+
+        INSERT INTO estoque.item_pedido (
+            cd_pedido,
+            cd_produto,
+            qt_item,
+            vl_unitario,
+            cd_deposito
+        )
+        VALUES (22, 20, 2, 600.00, 1);
+
+        RAISE NOTICE 'ERRO: o produto inativo foi inserido.';
 
     EXCEPTION WHEN OTHERS THEN
-        RAISE NOTICE 'Resultado do teste: %', SQLERRM;
+        RAISE NOTICE 'Bloqueio realizado: %', SQLERRM;
+
     END;
+
+    -- Reativar produto
+    UPDATE estoque.produto
+    SET is_ativo = TRUE
+    WHERE cd_produto = 20;
+
 END;
 $$;
 
 
--- Consultar itens do pedido
+-- TESTE 2: verificar bloqueio por estoque insuficiente
+
+DO $$
+DECLARE
+    v_quantidade INTEGER;
+BEGIN
+
+    SELECT qt_estoque - qt_minima + 1
+    INTO v_quantidade
+    FROM estoque.estoque
+    WHERE cd_produto = 20
+      AND cd_deposito = 1;
+
+    BEGIN
+
+        INSERT INTO estoque.item_pedido (
+            cd_pedido,
+            cd_produto,
+            qt_item,
+            vl_unitario,
+            cd_deposito
+        )
+        VALUES (22, 20, v_quantidade, 600.00, 1);
+
+        RAISE NOTICE 'ERRO: a venda comprometeu o estoque mínimo.';
+
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Bloqueio realizado: %', SQLERRM;
+
+    END;
+
+END;
+$$;
+
+
+-- Consultar os itens do pedido
 SELECT *
 FROM estoque.item_pedido
 WHERE cd_pedido = 22;
 
-
--- Remover item de teste
-DELETE FROM estoque.item_pedido
-WHERE cd_pedido = 22
-  AND cd_produto = 20;
-
-
-/*
-=========================================================
-7. ATUALIZAÇÃO AUTOMÁTICA DO SALDO DE ESTOQUE
-=========================================================
-
-Solicitação do gerente:
-
-"Quando uma movimentação de estoque for registrada,
-o saldo disponível do produto no depósito deverá ser
-atualizado automaticamente."
-
-Regras:
-- Se o tipo de movimentação for E, adicionar
-  a quantidade ao estoque.
-- Se o tipo de movimentação for S, retirar
-  a quantidade do estoque.
-- Não permitir que o estoque fique negativo.
-
-Tabelas:
-movimentacao_estoque e estoque.
-
-Trigger:
-estoque.tr_atualizar_estoque.
-*/
-
-
--- Consultar saldo antes
-SELECT cd_produto, cd_deposito, qt_estoque
-FROM estoque.estoque
-WHERE cd_produto = 2 AND cd_deposito = 2;
-
-
--- Registrar entrada de 50 unidades
-INSERT INTO estoque.movimentacao_estoque (
-    cd_produto,
-    cd_deposito,
-    tp_movimentacao,
-    qt_movimentada
-)
-VALUES (2, 2, 'E', 50);
-
-
--- Consultar saldo depois
-SELECT cd_produto, cd_deposito, qt_estoque
-FROM estoque.estoque
-WHERE cd_produto = 2 AND cd_deposito = 2;
