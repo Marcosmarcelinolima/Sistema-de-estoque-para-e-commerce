@@ -31,11 +31,13 @@ O resultado deve apresentar:
 
 SELECT
     c.nm_cliente AS Nome_Cliente,
-    COUNT(p.cd_pedido) AS Quantidade_Pedidos_Pagos,
-    SUM(p.vl_total) AS Valor_Total_Gasto
+    COUNT(DISTINCT p.cd_pedido) AS Quantidade_Pedidos_Pagos,
+    SUM(ip.qt_item * ip.vl_unitario) AS Valor_Total_Gasto
 FROM estoque.cliente c
 INNER JOIN estoque.pedido p
     ON c.cd_cliente = p.cd_cliente
+INNER JOIN estoque.item_pedido ip
+    ON p.cd_pedido = ip.cd_pedido
 WHERE p.tp_status = 2
 GROUP BY
     c.cd_cliente,
