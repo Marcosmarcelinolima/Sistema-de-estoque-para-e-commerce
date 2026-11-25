@@ -1,68 +1,9 @@
-# Modelo Físico — Estoque para E-commerce (Banco de Dados II)
+##  Regras de négocio
 
-## Diagrama
+## Modelo fisico
+<img width="1617" height="1548" alt="Untitled" src="https://github.com/user-attachments/assets/b6114504-b787-4ac8-8a97-5279b22463bb" />
 
-![Modelo físico](img/diagrama-modelo-fisico.png)
 
-```mermaid
-erDiagram
-    categoria ||--o{ produto : classifica
-    marca ||--o{ produto : fabrica
-    produto ||--o| produto_fisico : "especializa"
-    produto ||--o| produto_digital : "especializa"
-    produto ||--o{ produto_fornecedor : ""
-    fornecedor ||--o{ produto_fornecedor : ""
-    produto_fisico ||--o{ estoque : ""
-    deposito ||--o{ estoque : ""
-    estoque ||--o{ movimentacao_estoque : registra
-    cliente ||--o{ pedido : realiza
-    deposito ||--o{ pedido : atende
-    pedido ||--o{ item_pedido : contem
-    produto ||--o{ item_pedido : ""
-
-    categoria {
-        smallint cd_categoria PK
-    }
-    marca {
-        smallint cd_marca PK
-    }
-    produto {
-        int cd_produto PK
-    }
-    produto_fisico {
-        int cd_produto PK, FK
-    }
-    produto_digital {
-        int cd_produto PK, FK
-    }
-    fornecedor {
-        smallint cd_fornecedor PK
-    }
-    produto_fornecedor {
-        int cd_produto PK, FK
-        smallint cd_fornecedor PK, FK
-    }
-    deposito {
-        smallint cd_deposito PK
-    }
-    estoque {
-        int cd_produto PK, FK
-        smallint cd_deposito PK, FK
-    }
-    cliente {
-        int cd_cliente PK
-    }
-    pedido {
-        int cd_pedido PK
-    }
-    item_pedido {
-        int cd_pedido PK, FK
-        int cd_produto PK, FK
-    }
-    movimentacao_estoque {
-        int cd_movimentacao PK
-    }
-```
 
 ## Normalização
 
