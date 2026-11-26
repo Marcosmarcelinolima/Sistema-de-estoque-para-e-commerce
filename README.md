@@ -1,5 +1,8 @@
 ##  Regras de négocio
 
+## Como Executar o CRUD?
+- **1** Para rodar o projeto na sua máquina, siga o [passo a passo de instalação](COMO-RODAR.md).
+
 ## Modelo fisico
 <img width="1617" height="1548" alt="Untitled" src="https://github.com/user-attachments/assets/b6114504-b787-4ac8-8a97-5279b22463bb" />
 
