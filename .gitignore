@@ -1,2 +1,5 @@
 node_modules/
 00-setup.sql
+.env
+
+/* com a barra, fica de fora a pasta, sem a barra, fica de fora o arquivo */
