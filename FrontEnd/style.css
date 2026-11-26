@@ -1,20 +1,47 @@
 /* =========================================================
-   PAINEL DE VENDAS – style.css
-   Para mudar o visual do painel inteiro, edite as variáveis
-   logo abaixo.
+   MINHA LOJA – style.css
+   Estilos compartilhados por todas as páginas do painel.
+
+   Para mudar o visual inteiro, edite as variáveis em :root.
+
+   ÍNDICE
+    1. Variáveis
+    2. Base
+    3. Estrutura geral
+    4. Menu lateral
+    5. Barra superior
+    6. Botões
+    7. Painéis
+    8. Indicadores (painel)
+    9. Etapas do pedido (painel)
+   10. Grade principal (painel)
+   11. Filtros
+   12. Tabela
+   13. Selos de status
+   14. Gráfico de barras (painel)
+   15. Listas (painel)
+   16. Formulário
+   17. Mensagens
+   18. Responsivo
    ========================================================= */
+
+
+/* ---------- 1. Variáveis ---------- */
 
 :root {
   /* Cores base */
   --bg: #eef2f1;
   --surface: #ffffff;
+  --surface-hover: #f7faf9;
   --ink: #14262b;
   --muted: #5b6f73;
   --line: #d9e1e0;
+  --line-strong: #bfcccb;
 
   /* Marca */
   --brand: #0e6e6a;
   --brand-dark: #0a4f4c;
+  --brand-light: #4fd1c5;
   --side: #123239;
   --side-text: #c4d6d6;
 
@@ -29,6 +56,8 @@
   --blue-bg: #e1eaf7;
   --violet: #5b4a9c;
   --violet-bg: #e9e5f6;
+  --teal: #0f6663;
+  --teal-bg: #d9f0ee;
   --grey: #55666a;
   --grey-bg: #e5eaea;
 
@@ -39,10 +68,13 @@
   /* Medidas */
   --radius: 10px;
   --radius-small: 6px;
+  --radius-pill: 999px;
   --sidebar-width: 240px;
+  --transition: 0.15s;
 }
 
-/* ---------- Base ---------- */
+
+/* ---------- 2. Base ---------- */
 
 *,
 *::before,
@@ -83,7 +115,9 @@ a {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
   color: inherit;
 }
@@ -93,21 +127,32 @@ input {
   outline-offset: 2px;
 }
 
+/* Garante que o atributo hidden sempre esconda, mesmo com display definido */
+[hidden] {
+  display: none !important;
+}
+
+/* Texto só para leitores de tela */
 .sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
 
+/* Números alinhados (códigos, CNPJ, valores) */
 .mono {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
 
-/* ---------- Estrutura geral ---------- */
+
+/* ---------- 3. Estrutura geral ---------- */
 
 .app {
   display: grid;
@@ -115,7 +160,11 @@ input {
   min-height: 100vh;
 }
 
-.main {
+/* Permite que os blocos encolham em telas pequenas
+   (sem isso, tabelas largas empurram a página para os lados) */
+.app > *,
+.content > *,
+.grid > * {
   min-width: 0;
 }
 
@@ -126,7 +175,8 @@ input {
   max-width: 1400px;
 }
 
-/* ---------- Menu lateral ---------- */
+
+/* ---------- 4. Menu lateral ---------- */
 
 .sidebar {
   position: sticky;
@@ -146,19 +196,20 @@ input {
   gap: 10px;
   padding: 0 8px;
   color: #fff;
+  white-space: nowrap; /* "Minha Loja" não quebra em duas linhas no celular */
 }
 
 .brand-mark {
   width: 26px;
   height: 26px;
   border-radius: 7px 7px 7px 2px;
-  background: #4fd1c5;
+  background: var(--brand-light);
 }
 
 .brand-name {
   font-family: var(--font-title);
-  font-weight: 700;
   font-size: 20px;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -171,12 +222,11 @@ input {
 .nav-link {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 9px 12px;
   border-radius: var(--radius-small);
   color: var(--side-text);
   font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--transition), color var(--transition);
 }
 
 .nav-link:hover {
@@ -187,24 +237,6 @@ input {
 .nav-link.is-active {
   background: #fff;
   color: var(--side);
-}
-
-.nav-count {
-  min-width: 24px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  font-size: 12px;
-  text-align: center;
-}
-
-.nav-link.is-active .nav-count {
-  background: var(--grey-bg);
-}
-
-.nav-count--alert {
-  background: #e8a33d;
-  color: #3a2600;
 }
 
 .sidebar-user {
@@ -236,19 +268,20 @@ input {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #4fd1c5;
+  background: var(--brand-light);
   color: var(--side);
   font-size: 13px;
   font-weight: 700;
 }
 
-/* ---------- Barra superior ---------- */
+
+/* ---------- 5. Barra superior ---------- */
 
 .topbar {
   display: flex;
   align-items: center;
-  gap: 20px;
   flex-wrap: wrap;
+  gap: 20px;
   padding: 20px 32px;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
@@ -288,7 +321,7 @@ input {
 .search input:focus {
   outline: 2px solid var(--brand);
   outline-offset: 0;
-  background: #fff;
+  background: var(--surface);
 }
 
 .topbar-actions {
@@ -296,7 +329,13 @@ input {
   gap: 10px;
 }
 
-/* ---------- Botões ---------- */
+/* Página sem busca (ex.: Fornecedores): encosta os botões à direita */
+.topbar-title + .topbar-actions {
+  margin-left: auto;
+}
+
+
+/* ---------- 6. Botões ---------- */
 
 .btn {
   padding: 9px 16px;
@@ -305,12 +344,17 @@ input {
   background: var(--surface);
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
 .btn:hover {
   background: var(--bg);
-  border-color: #bfcccb;
+  border-color: var(--line-strong);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .btn--primary {
@@ -328,17 +372,23 @@ input {
   background: transparent;
 }
 
+/* Ação destrutiva (ex.: Excluir) */
+.btn--danger {
+  color: var(--red);
+}
+
+.btn--danger:hover {
+  background: var(--red-bg);
+  border-color: var(--red);
+}
+
 .btn--small {
   padding: 5px 12px;
   font-size: 13px;
 }
 
-.btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 
-/* ---------- Painéis ---------- */
+/* ---------- 7. Painéis ---------- */
 
 .panel {
   padding: 20px;
@@ -351,8 +401,8 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -378,7 +428,8 @@ input {
   text-decoration: underline;
 }
 
-/* ---------- Indicadores ---------- */
+
+/* ---------- 8. Indicadores (painel) ---------- */
 
 .kpis {
   display: grid;
@@ -415,13 +466,8 @@ input {
   font-size: 13px;
 }
 
-.kpi-delta--up {
-  color: var(--green);
-}
-
-.kpi-delta--down {
-  color: var(--red);
-}
+.kpi-delta--up   { color: var(--green); }
+.kpi-delta--down { color: var(--red); }
 
 .kpi--attention {
   background: var(--amber-bg);
@@ -432,7 +478,8 @@ input {
   color: var(--amber);
 }
 
-/* ---------- Etapas do pedido ---------- */
+
+/* ---------- 9. Etapas do pedido (painel) ---------- */
 
 .pipeline {
   display: flex;
@@ -450,13 +497,8 @@ input {
   color: #fff;
 }
 
-.stage:first-child {
-  border-radius: var(--radius-small) 0 0 var(--radius-small);
-}
-
-.stage:last-child {
-  border-radius: 0 var(--radius-small) var(--radius-small) 0;
-}
+.stage:first-child { border-radius: var(--radius-small) 0 0 var(--radius-small); }
+.stage:last-child  { border-radius: 0 var(--radius-small) var(--radius-small) 0; }
 
 .stage-count {
   font-family: var(--font-title);
@@ -473,17 +515,18 @@ input {
 
 .stage--1 { background: #b9770e; }
 .stage--2 { background: #2f6fb0; }
-.stage--3 { background: #5b4a9c; }
+.stage--3 { background: var(--violet); }
 .stage--4 { background: #1d8a8a; }
-.stage--5 { background: #2a7447; }
+.stage--5 { background: var(--green); }
 
-/* ---------- Grade principal ---------- */
+
+/* ---------- 10. Grade principal (painel) ---------- */
 
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 20px;
   align-items: start;
+  gap: 20px;
 }
 
 .side {
@@ -491,23 +534,25 @@ input {
   gap: 20px;
 }
 
-/* ---------- Filtros ---------- */
+
+/* ---------- 11. Filtros ---------- */
 
 .filters {
   display: flex;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
 }
 
 .chip {
   padding: 5px 12px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--muted);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
 }
 
 .chip:hover {
@@ -521,13 +566,15 @@ input {
   color: #fff;
 }
 
-/* ---------- Tabela ---------- */
+
+/* ---------- 12. Tabela ---------- */
 
 .panel--table {
   padding-bottom: 14px;
 }
 
 .table-wrap {
+  position: relative; /* mantém o texto .sr-only dentro da área que rola */
   margin: 0 -20px;
   overflow-x: auto;
 }
@@ -538,22 +585,22 @@ input {
   border-collapse: collapse;
 }
 
-.table th {
-  padding: 10px 14px;
-  border-top: 1px solid var(--line);
+.table th,
+.table td {
+  padding: 13px 14px;
   border-bottom: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
   text-align: left;
   white-space: nowrap;
 }
 
-.table td {
-  padding: 13px 14px;
-  border-bottom: 1px solid var(--line);
-  white-space: nowrap;
+.table th {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .table th:first-child,
@@ -567,7 +614,7 @@ input {
 }
 
 .table tbody tr:hover {
-  background: #f7faf9;
+  background: var(--surface-hover);
 }
 
 .table .num {
@@ -579,12 +626,16 @@ input {
   text-align: right;
 }
 
+.table .actions .btn + .btn {
+  margin-left: 6px;
+}
+
 .table-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 12px;
   padding-top: 14px;
   color: var(--muted);
   font-size: 13px;
@@ -595,24 +646,31 @@ input {
   gap: 8px;
 }
 
-/* ---------- Selos de status ---------- */
+
+/* ---------- 13. Selos de status ---------- */
 
 .status {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 600;
 }
 
+/* Pedidos */
 .status--pending   { background: var(--amber-bg);  color: var(--amber); }
 .status--paid      { background: var(--blue-bg);   color: var(--blue); }
 .status--picking   { background: var(--violet-bg); color: var(--violet); }
-.status--shipped   { background: #d9f0ee;          color: #0f6663; }
+.status--shipped   { background: var(--teal-bg);   color: var(--teal); }
 .status--delivered { background: var(--green-bg);  color: var(--green); }
 .status--cancelled { background: var(--red-bg);    color: var(--red); }
 
-/* ---------- Gráfico de barras ---------- */
+/* Cadastros (ex.: fornecedores) */
+.status--active    { background: var(--green-bg);  color: var(--green); }
+.status--inactive  { background: var(--grey-bg);   color: var(--grey); }
+
+
+/* ---------- 14. Gráfico de barras (painel) ---------- */
 
 .bars {
   display: grid;
@@ -621,6 +679,7 @@ input {
   gap: 10px;
   height: 160px;
   padding-top: 8px;
+  margin-bottom: 26px; /* espaço para os rótulos dos dias */
 }
 
 .bar {
@@ -648,11 +707,8 @@ input {
   font-weight: 600;
 }
 
-.bars {
-  margin-bottom: 26px;
-}
 
-/* ---------- Listas (estoque e mais vendidos) ---------- */
+/* ---------- 15. Listas (painel) ---------- */
 
 .list li {
   display: flex;
@@ -687,20 +743,13 @@ input {
 .stock {
   flex: none;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 600;
 }
 
-.stock--critical {
-  background: var(--red-bg);
-  color: var(--red);
-}
-
-.stock--low {
-  background: var(--amber-bg);
-  color: var(--amber);
-}
+.stock--critical { background: var(--red-bg);   color: var(--red); }
+.stock--low      { background: var(--amber-bg); color: var(--amber); }
 
 .sold {
   flex: none;
@@ -709,8 +758,107 @@ input {
   font-weight: 600;
 }
 
-/* ---------- Responsivo ---------- */
 
+/* ---------- 16. Formulário ---------- */
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+}
+
+.field {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.field--wide {
+  grid-column: 1 / -1; /* ocupa a linha inteira */
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field label small {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.field input:not([type="checkbox"]),
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  transition: border-color var(--transition);
+}
+
+.field input:hover,
+.field select:hover,
+.field textarea:hover {
+  border-color: var(--line-strong);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 0;
+  border-color: var(--brand);
+}
+
+/* Campo com erro (o JavaScript marca com aria-invalid="true") */
+.field input[aria-invalid="true"] {
+  border-color: var(--red);
+}
+
+.field-error {
+  color: var(--red);
+  font-size: 12px;
+}
+
+/* Caixa de marcação com o texto ao lado (ex.: "Fornecedor ativo") */
+.field--check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field--check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand);
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+
+/* ---------- 17. Mensagens ---------- */
+
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-small);
+  font-weight: 500;
+}
+
+.alert--sucesso { background: var(--green-bg); color: var(--green); }
+.alert--erro    { background: var(--red-bg);   color: var(--red); }
+.alert--aviso   { background: var(--amber-bg); color: var(--amber); }
+
+
+/* ---------- 18. Responsivo ---------- */
+
+/* Telas médias: notebook pequeno, tablet deitado */
 @media (max-width: 1180px) {
   .kpis {
     grid-template-columns: repeat(2, 1fr);
@@ -725,6 +873,7 @@ input {
   }
 }
 
+/* Tablet em pé: o menu lateral vira uma faixa no topo */
 @media (max-width: 860px) {
   .app {
     grid-template-columns: 1fr;
@@ -746,7 +895,6 @@ input {
   }
 
   .nav-link {
-    gap: 8px;
     white-space: nowrap;
   }
 
@@ -759,14 +907,10 @@ input {
   }
 
   .search {
-    max-width: none;
-    margin-left: 0;
     order: 3;
     flex-basis: 100%;
-  }
-
-  .topbar-actions {
-    margin-left: auto;
+    max-width: none;
+    margin-left: 0;
   }
 
   .content {
@@ -777,9 +921,18 @@ input {
     flex-wrap: wrap;
   }
 
-  .stage {
+  .stage,
+  .stage:first-child,
+  .stage:last-child {
     flex: 1 1 calc(50% - 4px);
-    border-radius: var(--radius-small) !important;
+    border-radius: var(--radius-small);
+  }
+}
+
+/* Celular */
+@media (max-width: 640px) {
+  .form {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -793,6 +946,7 @@ input {
   }
 }
 
+/* Respeita quem pediu menos animação no sistema */
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

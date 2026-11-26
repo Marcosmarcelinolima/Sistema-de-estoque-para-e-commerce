@@ -54,7 +54,42 @@
       </header>
 
       <main class="content">
+                <!-- Mensagens de sucesso/erro (preenchida pelo JavaScript) -->
+        <div id="mensagem" class="alert" hidden></div>
 
+        <!-- ---------- FORMULÁRIO ---------- -->
+        <section class="panel" id="painel-form" hidden>
+          <div class="panel-head">
+            <h2 id="titulo-form">Novo fornecedor</h2>
+          </div>
+
+          <form id="form-fornecedor" class="form">
+            <div class="field field--wide">
+              <label for="nm_fornecedor">Nome *</label>
+              <input id="nm_fornecedor" name="nm_fornecedor" maxlength="100" required>
+            </div>
+
+            <div class="field">
+              <label for="nr_cnpj">CNPJ * <small>(14 números)</small></label>
+              <input id="nr_cnpj" name="nr_cnpj" inputmode="numeric" maxlength="18" required>
+            </div>
+
+            <div class="field">
+              <label for="ds_email">E-mail *</label>
+              <input id="ds_email" name="ds_email" type="email" maxlength="100" required>
+            </div>
+
+            <div class="field">
+              <label for="nr_telefone">Telefone <small>(opcional, com DDD)</small></label>
+              <input id="nr_telefone" name="nr_telefone" inputmode="numeric" maxlength="15">
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn--ghost" id="btn-cancelar">Cancelar</button>
+              <button type="submit" class="btn btn--primary">Salvar</button>
+            </div>
+          </form>
+        </section>
         <!-- ---------- LISTAGEM ---------- -->
         <section class="panel panel--table">
           <div class="panel-head">
