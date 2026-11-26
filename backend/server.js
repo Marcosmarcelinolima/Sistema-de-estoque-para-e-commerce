@@ -1,6 +1,9 @@
 const express = require('express'); // carrega a biblioteca Express
 const app = express();              // cria o servidor
 app.use(express.json()); // habilita o servidor para receber JSON no corpo da requisição
+const path = require('path'); // carrega a biblioteca path para manipular caminhos de arquivos
+
+app.use(express.static(path.join(__dirname, '..', 'FrontEnd')));
 
 // ROTA: quando alguém acessar GET /rota, responda com este JSON
 app.get('/rota', (req, res) => {

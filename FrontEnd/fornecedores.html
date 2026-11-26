@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fornecedores</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- ============ MENU LATERAL ============ -->
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Minha Loja</span>
+      </a>
+
+      <nav class="nav" aria-label="Principal">
+        <a href="index.html" class="nav-link is-active">Painel</a>
+        <a href="fornecedores.html" class="nav-link">Fornecedores</a>
+      </nav>
+      </nav>
+
+      <div class="sidebar-user">
+        <span class="avatar">AD</span>
+        <div>
+          <strong>Administrador</strong>
+          <small>admin@minhaloja.com</small>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ CONTEÚDO ============ -->
+    <div class="main">
+
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1>Fornecedores</h1>
+          <p>Cadastro de fornecedores da loja</p>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Vai abrir o formulário de cadastro (passo 7.4) -->
+          <button class="btn btn--primary" type="button" id="btn-novo">Novo fornecedor</button>
+        </div>
+      </header>
+
+      <main class="content">
+
+        <!-- ---------- LISTAGEM ---------- -->
+        <section class="panel panel--table">
+          <div class="panel-head">
+            <h2>Lista de fornecedores</h2>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nome</th>
+                  <th>CNPJ</th>
+                  <th>E-mail</th>
+                  <th>Telefone</th>
+                  <th>Situação</th>
+                </tr>
+              </thead>
+
+              <!-- As linhas serão criadas pelo JavaScript com os dados da API -->
+              <tbody id="tabela-fornecedores">
+                <tr><td colspan="6">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+<script src="fornecedores.js"></script>
+</body>
+</html>
