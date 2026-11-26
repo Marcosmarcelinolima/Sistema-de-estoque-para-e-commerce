@@ -65,7 +65,8 @@ function desenharTabela(fornecedores) {
     const celulaAcoes = document.createElement('td');
     celulaAcoes.className = 'actions';
     celulaAcoes.innerHTML =
-      '<button class="btn btn--small" type="button" data-acao="editar">Editar</button>';
+      '<button class="btn btn--small" type="button" data-acao="editar">Editar</button> ' +
+      '<button class="btn btn--small btn--danger" type="button" data-acao="excluir">Excluir</button>';
     linha.appendChild(celulaAcoes);
 
     tabela.appendChild(linha);
@@ -163,6 +164,27 @@ async function salvar(evento) {
   }
 }
 
+// ---------- DELETE: excluir (ou desativar, se tiver produtos) ----------
+async function excluir(id) {
+  const linha = tabela.querySelector(`tr[data-id="${id}"]`);
+  const nome  = linha.children[1].textContent; // 2ª coluna = nome
+
+  if (!confirm(`Excluir o fornecedor "${nome}"?`)) return; // usuário cancelou
+
+  try {
+    const resposta = await fetch(`/api/fornecedores/${id}`, { method: 'DELETE' });
+    const dados = await resposta.json();
+    if (!resposta.ok) throw new Error(dados.erro);
+
+    // A API diz o que aconteceu: 'excluido' ou 'desativado'
+    const tipo = dados.acao === 'desativado' ? 'aviso' : 'sucesso';
+    mostrarMensagem(dados.mensagem, tipo);
+    carregarFornecedores();
+  } catch (erro) {
+    mostrarMensagem(erro.message, 'erro');
+  }
+}
+
 
 // ---------- 5. MENSAGENS ----------
 let timerMensagem;
@@ -189,7 +211,8 @@ tabela.addEventListener('click', (evento) => {
   if (!botao) return; // clicou em outro lugar da tabela
 
   const id = botao.closest('tr').dataset.id;
-  if (botao.dataset.acao === 'editar') abrirEdicao(id);
+    if (botao.dataset.acao === 'editar') abrirEdicao(id);
+    if (botao.dataset.acao === 'excluir') excluir(id);
 });
 
 
