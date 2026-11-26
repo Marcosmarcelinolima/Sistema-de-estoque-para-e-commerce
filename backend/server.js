@@ -87,7 +87,7 @@ app.get('/api/fornecedores/:id', async (req, res) => {
             // adiciona o parâmetro de entrada para a consulta, ou seja, quando a rota recebe /api/fornecedores/1, o valor 1 será passado como parâmetro para a consulta SQL retornar o id 1
 
 //rota de busca por id NÃO depende de status, pois o id é único e não se repete, então não faz sentido filtrar por status.
-            .query('SELECT cd_fornecedor, nm_fornecedor, nr_cnpj, ds_email, nr_telefone FROM estoque.Fornecedor WHERE cd_fornecedor = @id'); // executa a consulta SQL
+            .query('SELECT cd_fornecedor, nm_fornecedor, nr_cnpj, ds_email, nr_telefone, case is_ativo when 1 then \'Ativo\' else \'Inativo\' end as status FROM estoque.Fornecedor WHERE cd_fornecedor = @id'); // executa a consulta SQL
 
             if (resultado.recordset.length === 0) {
                 return res.status(404).json({ erro: 'Fornecedor não encontrado' }); 
