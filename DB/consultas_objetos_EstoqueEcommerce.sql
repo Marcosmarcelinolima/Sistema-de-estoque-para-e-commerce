@@ -506,14 +506,28 @@ BEGIN
         THROW 51001, 'Produto inativo. Venda não permitida.', 1;
     END;
 
-    -- Verificar se o estoque é suficiente.
+    -- Verificar se o estoque restante ficará abaixo do mínimo.
     IF EXISTS (
         SELECT 1
-        FROM inserted i
-        INNER JOIN estoque.estoque e
-            ON e.cd_produto = i.cd_produto
-           AND e.cd_deposito = i.cd_deposito
-        WHERE e.qt_estoque - i.qt_item < e.qt_minima
+        FROM estoque.estoque e
+        INNER JOIN estoque.pedido ped
+            ON ped.cd_deposito = e.cd_deposito
+        INNER JOIN (
+            SELECT
+                cd_pedido,
+                cd_produto,
+                SUM(qt_item) AS quantidade_inserida
+            FROM inserted
+            GROUP BY cd_pedido, cd_produto
+        ) i
+            ON i.cd_pedido = ped.cd_pedido
+           AND i.cd_produto = e.cd_produto
+        GROUP BY
+            e.cd_produto,
+            e.cd_deposito,
+            e.qt_estoque,
+            e.qt_minima
+        HAVING e.qt_estoque - SUM(i.quantidade_inserida) < e.qt_minima
     )
     BEGIN
         ROLLBACK TRANSACTION;
@@ -529,44 +543,46 @@ TESTES DA TRIGGER
 =====================================================================
 */
 
--- TESTE 1: Desativar o produto
+-- TESTE 1: Bloquear venda de produto inativo
 
 UPDATE estoque.produto
 SET is_ativo = 0
-WHERE cd_produto = 20; -- Validar se esse codigo existe na hora da apresentação.
+WHERE cd_produto = 20;
 
--- Tentar inserir no pedido
+-- Tentar inserir produto inativo no pedido 22.
 INSERT INTO estoque.item_pedido
-(cd_pedido, cd_produto, qt_item, vl_unitario, cd_deposito)
-VALUES (22, 20, 2, 600.00, 1);
+(cd_pedido, cd_produto, qt_item, vl_unitario)
+VALUES (22, 20, 2, 600.00);
 
--- TESTE 2: Testar estoque insuficiente
 
--- reativAR o produto:
+-- TESTE 2: Bloquear venda quando o estoque ficar abaixo do mínimo
+
+-- Reativar o produto.
 UPDATE estoque.produto
 SET is_ativo = 1
 WHERE cd_produto = 20;
 
---Agora consulte o estoque:
-
-SELECT qt_estoque, qt_minima
+-- Consultar estoque do produto 3 no depósito 3.
+SELECT
+    cd_produto,
+    cd_deposito,
+    qt_estoque,
+    qt_minima
 FROM estoque.estoque
-WHERE cd_produto = 20
-  AND cd_deposito = 1;
+WHERE cd_produto = 3
+  AND cd_deposito = 3;
 
---Tente vender uma quantidade maior do que a disponível acima do mínimo:
-
+-- Tentar vender uma quantidade que deixará o estoque abaixo do mínimo.
 INSERT INTO estoque.item_pedido
-(cd_pedido, cd_produto, qt_item, vl_unitario, cd_deposito)
+(cd_pedido, cd_produto, qt_item, vl_unitario)
 SELECT
     22,
-    20,
+    3,
     qt_estoque - qt_minima + 1,
-    600.00,
-    1
+    3500.00
 FROM estoque.estoque
-WHERE cd_produto = 20
-  AND cd_deposito = 1;
+WHERE cd_produto = 3
+  AND cd_deposito = 3;
   
   
 /*
