@@ -81,21 +81,22 @@ Tabelas envolvidas: cliente e pedido.
 
 SELECT
     c.nm_cliente AS nome_cliente,
-    c.nm_cidade AS cidade,
-    c.sg_estado AS estado,
-    COUNT(DISTINCT ped.cd_pedido) AS quantidade_pedidos_pagos,
-    SUM(CAST(ip.qt_item AS DECIMAL(18, 2)) * ip.vl_unitario) AS valor_total_gasto
+    d.nm_cidade AS cidade,
+    d.sg_uf AS estado,
+    COUNT(ped.cd_pedido) AS quantidade_pedidos_pagos,
+    SUM(ped.vl_total) AS valor_total_gasto
 FROM estoque.cliente AS c
 INNER JOIN estoque.pedido AS ped
     ON c.cd_cliente = ped.cd_cliente
-INNER JOIN estoque.item_pedido AS ip
-    ON ped.cd_pedido = ip.cd_pedido
+INNER JOIN estoque.deposito AS d
+    ON ped.cd_deposito = d.cd_deposito
 WHERE ped.tp_status = 2
 GROUP BY
     c.cd_cliente,
     c.nm_cliente,
-    c.nm_cidade,
-    c.sg_estado
+    d.cd_deposito,
+    d.nm_cidade,
+    d.sg_uf
 ORDER BY valor_total_gasto DESC;
 
 
